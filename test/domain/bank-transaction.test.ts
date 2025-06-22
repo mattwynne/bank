@@ -2,6 +2,7 @@ import { assertThat, is } from "hamjest"
 import { BankTransaction } from "../../src/domain/bank-transaction"
 import { Category } from "../../src/domain/category"
 import { Description } from "../../src/domain/description"
+import { Amount } from "../../src/domain/amount"
 
 describe("BankTransaction", () => {
   describe("constructor", () => {
@@ -10,12 +11,12 @@ describe("BankTransaction", () => {
       const transaction = new BankTransaction(
         date,
         new Description("Coffee Shop"),
-        -5.5
+        Amount.debit(5.5)
       )
 
       assertThat(transaction.date, is(date))
       assertThat(transaction.description.value, is("Coffee Shop"))
-      assertThat(transaction.amount, is(-5.5))
+      assertThat(transaction.amount.value, is(-5.5))
       assertThat(transaction.category, is(undefined))
     })
 
@@ -25,7 +26,7 @@ describe("BankTransaction", () => {
       const transaction = new BankTransaction(
         date,
         new Description("Coffee Shop"),
-        -5.5,
+        Amount.debit(5.5),
         category
       )
 
@@ -38,7 +39,7 @@ describe("BankTransaction", () => {
       const originalTransaction = new BankTransaction(
         new Date("2023-01-15"),
         new Description("Coffee Shop"),
-        -5.5
+        Amount.debit(5.5)
       )
       const category = new Category("Food & Dining")
 
@@ -57,7 +58,7 @@ describe("BankTransaction", () => {
       const originalTransaction = new BankTransaction(
         new Date("2023-01-15"),
         new Description("Coffee Shop"),
-        -5.5
+        Amount.debit(5.5)
       )
       const category = new Category("Food & Dining")
 

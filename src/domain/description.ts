@@ -8,4 +8,8 @@ export class Description {
     }
     this.value = trimmed
   }
+
+  toString(): string {
+    return this.value
+  }
 }

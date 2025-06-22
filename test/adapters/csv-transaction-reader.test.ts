@@ -44,31 +44,31 @@ describe("CsvTransactionReader", () => {
       // Test debit transaction (E-TRANSFER)
       assertThat(transactions[0].date, is(new Date("2023-01-15")))
       assertThat(
-        transactions[0].description,
+        transactions[0].description.value,
         is("Internet Banking E-TRANSFER 105503693902 John Doe")
       )
-      assertThat(transactions[0].amount, is(-100.0))
+      assertThat(transactions[0].amount.value, is(-100.0))
 
       // Test debit transaction (Point of Sale)
       assertThat(transactions[1].date, is(new Date("2023-01-14")))
       assertThat(
-        transactions[1].description,
+        transactions[1].description.value,
         is("Point of Sale - Interac RETAIL PURCHASE 516419480876 COFFEE SHOP")
       )
-      assertThat(transactions[1].amount, is(-5.5))
+      assertThat(transactions[1].amount.value, is(-5.5))
 
       // Test credit transaction (Salary)
       assertThat(transactions[2].date, is(new Date("2023-01-13")))
       assertThat(
-        transactions[2].description,
+        transactions[2].description.value,
         is("Electronic Funds Transfer PAY SALARY-123 Company Name")
       )
-      assertThat(transactions[2].amount, is(2500.0))
+      assertThat(transactions[2].amount.value, is(2500.0))
 
       // Test debit transaction (Cheque)
       assertThat(transactions[3].date, is(new Date("2023-01-12")))
-      assertThat(transactions[3].description, is("CHEQUE 001 82657362"))
-      assertThat(transactions[3].amount, is(-250.0))
+      assertThat(transactions[3].description.value, is("CHEQUE 001 82657362"))
+      assertThat(transactions[3].amount.value, is(-250.0))
     })
 
     it("should handle transactions with commas in descriptions", async () => {
@@ -82,8 +82,14 @@ describe("CsvTransactionReader", () => {
       const transactions = await reader.readTransactions()
 
       assertThat(transactions, hasSize(2))
-      assertThat(transactions[0].description, is("Restaurant, Cafe & Bar"))
-      assertThat(transactions[1].description, is("Smith, Jones & Associates"))
+      assertThat(
+        transactions[0].description.value,
+        is("Restaurant, Cafe & Bar")
+      )
+      assertThat(
+        transactions[1].description.value,
+        is("Smith, Jones & Associates")
+      )
     })
 
     it("should handle empty file", async () => {
@@ -130,10 +136,10 @@ describe("CsvTransactionReader", () => {
       const transactions = await reader.readTransactions()
 
       assertThat(transactions, hasSize(4))
-      assertThat(transactions[0].amount, is(-45.0)) // Debit (negative)
-      assertThat(transactions[1].amount, is(2500.0)) // Credit (positive)
-      assertThat(transactions[2].amount, is(-35.0)) // Debit (negative)
-      assertThat(transactions[3].amount, is(25.5)) // Credit (positive)
+      assertThat(transactions[0].amount.value, is(-45.0)) // Debit (negative)
+      assertThat(transactions[1].amount.value, is(2500.0)) // Credit (positive)
+      assertThat(transactions[2].amount.value, is(-35.0)) // Debit (negative)
+      assertThat(transactions[3].amount.value, is(25.5)) // Credit (positive)
     })
 
     it("should throw error for non-existent file", async () => {

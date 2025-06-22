@@ -1,6 +1,7 @@
 import { TransactionReader } from "../ports/transaction-reader"
 import { BankTransaction } from "../domain/bank-transaction"
 import { Description } from "../domain/description"
+import { Amount } from "../domain/amount"
 import * as fs from "fs"
 import csv from "csv-parser"
 
@@ -68,16 +69,22 @@ export class CsvTransactionReader implements TransactionReader {
     }
 
     // Calculate amount (debits are negative, credits are positive)
-    let amount = 0
+    let amount: Amount
     if (debitAmount && debitAmount !== "") {
-      amount = -parseFloat(debitAmount)
+      const debitValue = parseFloat(debitAmount)
+      if (isNaN(debitValue)) {
+        throw new Error(`Invalid debit amount: '${debitAmount}'`)
+      }
+      amount = Amount.debit(debitValue)
     } else if (creditAmount && creditAmount !== "") {
-      amount = parseFloat(creditAmount)
-    }
-
-    if (isNaN(amount)) {
+      const creditValue = parseFloat(creditAmount)
+      if (isNaN(creditValue)) {
+        throw new Error(`Invalid credit amount: '${creditAmount}'`)
+      }
+      amount = Amount.credit(creditValue)
+    } else {
       throw new Error(
-        `Invalid amount: debit='${debitAmount}', credit='${creditAmount}'`
+        `No amount found: debit='${debitAmount}', credit='${creditAmount}'`
       )
     }
 

@@ -58,9 +58,9 @@ Return your response as a JSON array in the exact same order as the transactions
       .map((transaction, index) => {
         const formattedDate = transaction.date.toISOString().split("T")[0]
         const formattedAmount =
-          transaction.amount < 0
-            ? `-$${Math.abs(transaction.amount).toFixed(2)}`
-            : `$${transaction.amount.toFixed(2)}`
+          transaction.amount.value < 0
+            ? `-$${Math.abs(transaction.amount.value).toFixed(2)}`
+            : `$${transaction.amount.value.toFixed(2)}`
 
         return `${index + 1}. ${formattedDate}, "${
           transaction.description
