@@ -51,13 +51,8 @@ describe("Processor", () => {
 
     it("should categorize all transactions in batch", async () => {
       const transactions = [
-        new BankTransaction("123", new Date("2023-01-01"), "Coffee Shop", -5.5),
-        new BankTransaction(
-          "124",
-          new Date("2023-01-02"),
-          "Grocery Store",
-          -45.0
-        ),
+        new BankTransaction(new Date("2023-01-01"), "Coffee Shop", -5.5),
+        new BankTransaction(new Date("2023-01-02"), "Grocery Store", -45.0),
       ]
 
       mockReader.readTransactions = async () => transactions
@@ -80,7 +75,6 @@ describe("Processor", () => {
 
     it("should write categorized transactions", async () => {
       const transaction = new BankTransaction(
-        "123",
         new Date("2023-01-01"),
         "Coffee Shop",
         -5.5
@@ -105,16 +99,11 @@ describe("Processor", () => {
 
     it("should process transactions in batches of specified size", async () => {
       const transactions = [
-        new BankTransaction("1", new Date("2023-01-01"), "Coffee Shop", -5.5),
-        new BankTransaction(
-          "2",
-          new Date("2023-01-02"),
-          "Grocery Store",
-          -45.0
-        ),
-        new BankTransaction("3", new Date("2023-01-03"), "Gas Station", -30.0),
-        new BankTransaction("4", new Date("2023-01-04"), "Restaurant", -25.0),
-        new BankTransaction("5", new Date("2023-01-05"), "Pharmacy", -15.0),
+        new BankTransaction(new Date("2023-01-01"), "Coffee Shop", -5.5),
+        new BankTransaction(new Date("2023-01-02"), "Grocery Store", -45.0),
+        new BankTransaction(new Date("2023-01-03"), "Gas Station", -30.0),
+        new BankTransaction(new Date("2023-01-04"), "Restaurant", -25.0),
+        new BankTransaction(new Date("2023-01-05"), "Pharmacy", -15.0),
       ]
 
       mockReader.readTransactions = async () => transactions
@@ -144,12 +133,12 @@ describe("Processor", () => {
       assertThat(categorizerCalls[1], hasSize(2))
       assertThat(categorizerCalls[2], hasSize(1))
 
-      // Verify the transactions are batched correctly
-      assertThat(categorizerCalls[0][0].id, is("1"))
-      assertThat(categorizerCalls[0][1].id, is("2"))
-      assertThat(categorizerCalls[1][0].id, is("3"))
-      assertThat(categorizerCalls[1][1].id, is("4"))
-      assertThat(categorizerCalls[2][0].id, is("5"))
+      // Verify the transactions are batched correctly by description
+      assertThat(categorizerCalls[0][0].description, is("Coffee Shop"))
+      assertThat(categorizerCalls[0][1].description, is("Grocery Store"))
+      assertThat(categorizerCalls[1][0].description, is("Gas Station"))
+      assertThat(categorizerCalls[1][1].description, is("Restaurant"))
+      assertThat(categorizerCalls[2][0].description, is("Pharmacy"))
     })
   })
 })
