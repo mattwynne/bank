@@ -5,6 +5,7 @@ import { TransactionCategorizer } from "../src/ports/transaction-categorizer"
 import { TransactionWriter } from "../src/ports/transaction-writer"
 import { BankTransaction } from "../src/domain/bank-transaction"
 import { Category } from "../src/domain/category"
+import { Description } from "../src/domain/description"
 
 describe("Processor", () => {
   let mockReader: TransactionReader
@@ -51,8 +52,16 @@ describe("Processor", () => {
 
     it("should categorize all transactions in batch", async () => {
       const transactions = [
-        new BankTransaction(new Date("2023-01-01"), "Coffee Shop", -5.5),
-        new BankTransaction(new Date("2023-01-02"), "Grocery Store", -45.0),
+        new BankTransaction(
+          new Date("2023-01-01"),
+          new Description("Coffee Shop"),
+          -5.5
+        ),
+        new BankTransaction(
+          new Date("2023-01-02"),
+          new Description("Grocery Store"),
+          -45.0
+        ),
       ]
 
       mockReader.readTransactions = async () => transactions
@@ -69,14 +78,14 @@ describe("Processor", () => {
       await processor.process()
 
       assertThat(receivedTransactions, hasSize(2))
-      assertThat(receivedTransactions[0].description, is("Coffee Shop"))
-      assertThat(receivedTransactions[1].description, is("Grocery Store"))
+      assertThat(receivedTransactions[0].description.value, is("Coffee Shop"))
+      assertThat(receivedTransactions[1].description.value, is("Grocery Store"))
     })
 
     it("should write categorized transactions", async () => {
       const transaction = new BankTransaction(
         new Date("2023-01-01"),
-        "Coffee Shop",
+        new Description("Coffee Shop"),
         -5.5
       )
       mockReader.readTransactions = async () => [transaction]
@@ -99,11 +108,31 @@ describe("Processor", () => {
 
     it("should process transactions in batches of specified size", async () => {
       const transactions = [
-        new BankTransaction(new Date("2023-01-01"), "Coffee Shop", -5.5),
-        new BankTransaction(new Date("2023-01-02"), "Grocery Store", -45.0),
-        new BankTransaction(new Date("2023-01-03"), "Gas Station", -30.0),
-        new BankTransaction(new Date("2023-01-04"), "Restaurant", -25.0),
-        new BankTransaction(new Date("2023-01-05"), "Pharmacy", -15.0),
+        new BankTransaction(
+          new Date("2023-01-01"),
+          new Description("Coffee Shop"),
+          -5.5
+        ),
+        new BankTransaction(
+          new Date("2023-01-02"),
+          new Description("Grocery Store"),
+          -45.0
+        ),
+        new BankTransaction(
+          new Date("2023-01-03"),
+          new Description("Gas Station"),
+          -30.0
+        ),
+        new BankTransaction(
+          new Date("2023-01-04"),
+          new Description("Restaurant"),
+          -25.0
+        ),
+        new BankTransaction(
+          new Date("2023-01-05"),
+          new Description("Pharmacy"),
+          -15.0
+        ),
       ]
 
       mockReader.readTransactions = async () => transactions
@@ -134,11 +163,11 @@ describe("Processor", () => {
       assertThat(categorizerCalls[2], hasSize(1))
 
       // Verify the transactions are batched correctly by description
-      assertThat(categorizerCalls[0][0].description, is("Coffee Shop"))
-      assertThat(categorizerCalls[0][1].description, is("Grocery Store"))
-      assertThat(categorizerCalls[1][0].description, is("Gas Station"))
-      assertThat(categorizerCalls[1][1].description, is("Restaurant"))
-      assertThat(categorizerCalls[2][0].description, is("Pharmacy"))
+      assertThat(categorizerCalls[0][0].description.value, is("Coffee Shop"))
+      assertThat(categorizerCalls[0][1].description.value, is("Grocery Store"))
+      assertThat(categorizerCalls[1][0].description.value, is("Gas Station"))
+      assertThat(categorizerCalls[1][1].description.value, is("Restaurant"))
+      assertThat(categorizerCalls[2][0].description.value, is("Pharmacy"))
     })
   })
 })

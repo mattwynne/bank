@@ -2,6 +2,7 @@ import { assertThat, is, hasSize } from "hamjest"
 import { OpenAiTransactionCategorizer } from "../../src/adapters/openai-transaction-categorizer"
 import { BankTransaction } from "../../src/domain/bank-transaction"
 import { Category } from "../../src/domain/category"
+import { Description } from "../../src/domain/description"
 
 describe("OpenAiTransactionCategorizer", () => {
   let mockOpenAiClient: any

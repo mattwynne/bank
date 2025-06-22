@@ -1,5 +1,6 @@
 import { TransactionReader } from "../ports/transaction-reader"
 import { BankTransaction } from "../domain/bank-transaction"
+import { Description } from "../domain/description"
 import * as fs from "fs"
 import csv from "csv-parser"
 
@@ -80,6 +81,6 @@ export class CsvTransactionReader implements TransactionReader {
       )
     }
 
-    return new BankTransaction(date, description, amount)
+    return new BankTransaction(date, new Description(description), amount)
   }
 }

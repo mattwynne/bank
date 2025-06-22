@@ -1,15 +1,20 @@
 import { assertThat, is } from "hamjest"
 import { BankTransaction } from "../../src/domain/bank-transaction"
 import { Category } from "../../src/domain/category"
+import { Description } from "../../src/domain/description"
 
 describe("BankTransaction", () => {
   describe("constructor", () => {
     it("should create transaction with all provided fields", () => {
       const date = new Date("2023-01-15")
-      const transaction = new BankTransaction(date, "Coffee Shop", -5.5)
+      const transaction = new BankTransaction(
+        date,
+        new Description("Coffee Shop"),
+        -5.5
+      )
 
       assertThat(transaction.date, is(date))
-      assertThat(transaction.description, is("Coffee Shop"))
+      assertThat(transaction.description.value, is("Coffee Shop"))
       assertThat(transaction.amount, is(-5.5))
       assertThat(transaction.category, is(undefined))
     })
@@ -19,7 +24,7 @@ describe("BankTransaction", () => {
       const category = new Category("Food & Dining")
       const transaction = new BankTransaction(
         date,
-        "Coffee Shop",
+        new Description("Coffee Shop"),
         -5.5,
         category
       )
@@ -32,7 +37,7 @@ describe("BankTransaction", () => {
     it("should return new transaction with category attached", () => {
       const originalTransaction = new BankTransaction(
         new Date("2023-01-15"),
-        "Coffee Shop",
+        new Description("Coffee Shop"),
         -5.5
       )
       const category = new Category("Food & Dining")
@@ -51,7 +56,7 @@ describe("BankTransaction", () => {
     it("should not modify original transaction", () => {
       const originalTransaction = new BankTransaction(
         new Date("2023-01-15"),
-        "Coffee Shop",
+        new Description("Coffee Shop"),
         -5.5
       )
       const category = new Category("Food & Dining")

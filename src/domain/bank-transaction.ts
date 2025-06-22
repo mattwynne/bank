@@ -1,9 +1,10 @@
 import { Category } from "./category"
+import { Description } from "./description"
 
 export class BankTransaction {
   constructor(
     public readonly date: Date,
-    public readonly description: string,
+    public readonly description: Description,
     public readonly amount: number,
     public readonly category?: Category
   ) {}
