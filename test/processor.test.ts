@@ -28,7 +28,7 @@ describe("Processor", () => {
       writeTransactions: async (transactions: BankTransaction[]) => {},
     }
 
-    processor = new Processor(mockReader, mockCategorizer, mockWriter)
+    processor = new Processor(mockReader, mockCategorizer, mockWriter, 10)
   })
 
   describe("process", () => {
@@ -101,6 +101,55 @@ describe("Processor", () => {
 
       assertThat(writtenTransactions, hasSize(1))
       assertThat(writtenTransactions[0].category?.name, is("Food"))
+    })
+
+    it("should process transactions in batches of specified size", async () => {
+      const transactions = [
+        new BankTransaction("1", new Date("2023-01-01"), "Coffee Shop", -5.5),
+        new BankTransaction(
+          "2",
+          new Date("2023-01-02"),
+          "Grocery Store",
+          -45.0
+        ),
+        new BankTransaction("3", new Date("2023-01-03"), "Gas Station", -30.0),
+        new BankTransaction("4", new Date("2023-01-04"), "Restaurant", -25.0),
+        new BankTransaction("5", new Date("2023-01-05"), "Pharmacy", -15.0),
+      ]
+
+      mockReader.readTransactions = async () => transactions
+
+      const categorizerCalls: BankTransaction[][] = []
+      mockCategorizer.categorize = async (
+        transactionBatch: BankTransaction[]
+      ) => {
+        categorizerCalls.push(transactionBatch)
+        return transactionBatch.map((transaction) =>
+          transaction.withCategory(new Category("Test Category"))
+        )
+      }
+
+      const processorWithBatchSize = new Processor(
+        mockReader,
+        mockCategorizer,
+        mockWriter,
+        2
+      )
+
+      await processorWithBatchSize.process()
+
+      // Should have made 3 calls: [2, 2, 1] transactions
+      assertThat(categorizerCalls, hasSize(3))
+      assertThat(categorizerCalls[0], hasSize(2))
+      assertThat(categorizerCalls[1], hasSize(2))
+      assertThat(categorizerCalls[2], hasSize(1))
+
+      // Verify the transactions are batched correctly
+      assertThat(categorizerCalls[0][0].id, is("1"))
+      assertThat(categorizerCalls[0][1].id, is("2"))
+      assertThat(categorizerCalls[1][0].id, is("3"))
+      assertThat(categorizerCalls[1][1].id, is("4"))
+      assertThat(categorizerCalls[2][0].id, is("5"))
     })
   })
 })
