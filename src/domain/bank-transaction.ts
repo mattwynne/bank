@@ -27,14 +27,18 @@ export class BankTransaction {
       .split(/\s+/)
       .filter(
         (token) =>
-          token.length > 2 &&
           !/^\d+$/.test(token) && // Remove pure numbers
           !token.includes("@") && // Remove emails
           token !== "transfer" && // Remove common noise words
           token !== "banking" &&
           token !== "internet" &&
           token !== "electronic" &&
-          token !== "funds"
+          token !== "e-transfer" &&
+          token !== "deposit" &&
+          token !== "preauthorized" &&
+          token !== "debit" &&
+          token !== "funds" &&
+          token !== "interac"
       )
   }
 }

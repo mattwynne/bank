@@ -5,10 +5,8 @@ import { Category } from "../domain/category"
 export class OpenAiTransactionCategorizer implements TransactionCategorizer {
   constructor(private readonly openAiClient: any) {}
 
-  async categorize(
-    transactions: BankTransaction[]
-  ): Promise<BankTransaction[]> {
-    const prompt = this.buildPrompt(transactions)
+  async categorizeByTokens(tokens: string[]): Promise<string> {
+    const prompt = this.buildPrompt(tokens)
 
     const response = await this.openAiClient.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -26,23 +24,21 @@ export class OpenAiTransactionCategorizer implements TransactionCategorizer {
     })
 
     console.log([prompt, response.choices[0].message.content])
-    const categories = this.parseResponse(response.choices[0].message.content)
+    const category = this.parseResponse(response.choices[0].message.content)
 
-    return transactions.map((transaction, index) =>
-      transaction.withCategory(new Category(categories[index]))
-    )
+    return category
   }
 
   private buildSystemPrompt(): string {
-    return `You are a financial transaction categorizer. Your job is to categorize bank transactions into appropriate spending categories.
+    return `You are a financial transaction categorizer. Your job is to categorize a group of similar bank transactions based on their description tokens.
 
-Your response will be read by code that only understands JSON.
+You will receive a list of tokens extracted from transaction descriptions that represent a group of similar transactions.
 
-Please categorize each transaction and respond with a JSON array containing objects with a "category" field.
+Please respond with a single category name that best describes this group of transactions.
 
 Suggested categories are:
 - ATM Cash withdrawals
-- E-Transfer payment
+- E-Transfer payment  
 - Internet banking transfer
 - Mortgage
 - Salary
@@ -56,50 +52,26 @@ Suggested categories are:
 - Bills & Utilities
 - Healthcare
 - Travel
-- Salary
 - Other income
 - Transfer
 - Unknown
 
-Note the following keywords in a transaction that will help you categorize it:
+Note the following keywords that will help you categorize:
 | Keywords | Category |
 |----------|----------|
 | Amy Farrish | Cleaning |
 | Manulife | Healthcare |
 | Wendee Byrne | Healthcare |
-| Pilates | Healthcare |
-| Virgin Plus | Bills & Utilities |
-| PAY Red Donkey Tech | Salary |
 
-Return your response as a JSON array in the exact same order as the transactions provided. Each object should have a "category" field with the category name.
-
-The response must only contain raw valid JSON.`
+Respond with only the category name, no additional text or formatting.`
   }
 
-  private buildPrompt(transactions: BankTransaction[]): string {
-    const transactionList = transactions
-      .map((transaction, index) => {
-        const formattedDate = transaction.date.toISOString().split("T")[0]
-        const formattedAmount =
-          transaction.amount.value < 0
-            ? `-$${Math.abs(transaction.amount.value).toFixed(2)}`
-            : `$${transaction.amount.value.toFixed(2)}`
-
-        return `${index + 1}. ${formattedDate}, "${
-          transaction.description
-        }", ${formattedAmount}`
-      })
-      .join("\n")
-
-    return `Categorize these bank transactions:\n\n${transactionList}\n\nRespond with a JSON array of category objects.`
+  private buildPrompt(tokens: string[]): string {
+    return tokens.join(", ")
   }
 
-  private parseResponse(responseContent: string): string[] {
-    try {
-      const parsed = JSON.parse(responseContent)
-      return parsed.map((item: any) => item.category)
-    } catch (error) {
-      throw new Error(`Failed to parse OpenAI response: ${responseContent}`)
-    }
+  private parseResponse(responseContent: string): string {
+    // Since we're now expecting just a category name, trim whitespace
+    return responseContent.trim()
   }
 }

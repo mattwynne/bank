@@ -20,17 +20,14 @@ describe("Processor", () => {
     }
 
     mockCategorizer = {
-      categorize: async (transactions: BankTransaction[]) =>
-        transactions.map((transaction) =>
-          transaction.withCategory(new Category("test-category"))
-        ),
+      categorizeByTokens: async (tokens: string[]) => "test-category",
     }
 
     mockWriter = {
       writeTransactions: async (transactions: BankTransaction[]) => {},
     }
 
-    processor = new Processor(mockReader, mockCategorizer, mockWriter, 10)
+    processor = new Processor(mockReader, mockCategorizer, mockWriter)
   })
 
   describe("process", () => {
@@ -51,7 +48,7 @@ describe("Processor", () => {
       assertThat(readCalled, is(true))
     })
 
-    it("should categorize all transactions in groups by similarity", async () => {
+    it("should categorize all transactions in groups by tokens", async () => {
       const transactions = [
         new BankTransaction(
           1,
@@ -69,22 +66,21 @@ describe("Processor", () => {
 
       mockReader.readTransactions = async () => transactions
 
-      let allReceivedTransactions: BankTransaction[] = []
-      mockCategorizer.categorize = async (transactions: BankTransaction[]) => {
-        allReceivedTransactions.push(...transactions)
-        return transactions.map((transaction) =>
-          transaction.withCategory(new Category("Food"))
-        )
+      const receivedTokens: string[][] = []
+      mockCategorizer.categorizeByTokens = async (tokens: string[]) => {
+        receivedTokens.push(tokens)
+        return "Food"
       }
 
       await processor.process()
 
-      assertThat(allReceivedTransactions, hasSize(2))
-      const descriptions = allReceivedTransactions.map(
-        (t) => t.description.value
-      )
-      assertThat(descriptions.includes("Coffee Shop"), is(true))
-      assertThat(descriptions.includes("Grocery Store"), is(true))
+      assertThat(receivedTokens.length, is(2)) // Two different token groups
+      // Coffee Shop tokens
+      assertThat(receivedTokens[0].includes("coffee"), is(true))
+      assertThat(receivedTokens[0].includes("shop"), is(true))
+      // Grocery Store tokens
+      assertThat(receivedTokens[1].includes("grocery"), is(true))
+      assertThat(receivedTokens[1].includes("store"), is(true))
     })
 
     it("should write categorized transactions", async () => {
@@ -95,9 +91,7 @@ describe("Processor", () => {
         Amount.debit(5.5)
       )
       mockReader.readTransactions = async () => [transaction]
-      mockCategorizer.categorize = async (transactions: BankTransaction[]) => [
-        transactions[0].withCategory(new Category("Food")),
-      ]
+      mockCategorizer.categorizeByTokens = async (tokens: string[]) => "Food"
 
       let writtenTransactions: BankTransaction[] = []
       mockWriter.writeTransactions = async (
@@ -156,14 +150,10 @@ describe("Processor", () => {
 
       mockReader.readTransactions = async () => transactions
 
-      const categorizerCalls: BankTransaction[][] = []
-      mockCategorizer.categorize = async (
-        transactionGroup: BankTransaction[]
-      ) => {
-        categorizerCalls.push(transactionGroup)
-        return transactionGroup.map((transaction) =>
-          transaction.withCategory(new Category("Test Category"))
-        )
+      const categorizerCalls: string[][] = []
+      mockCategorizer.categorizeByTokens = async (tokens: string[]) => {
+        categorizerCalls.push(tokens)
+        return "Test Category"
       }
 
       await processor.process()
@@ -171,25 +161,25 @@ describe("Processor", () => {
       // Should group similar e-transfers together and similar coffee shop purchases together
       // Plus the cheque should be in its own group
       // So we expect fewer groups than individual transactions
-      assertThat(categorizerCalls.length, is(3)) // 3 distinct groups
+      assertThat(categorizerCalls.length, is(3)) // 3 distinct token groups
 
-      // Find the e-transfer group (should have 2 transactions)
-      const eTransferGroup = categorizerCalls.find((group) =>
-        group.some((t) => t.description.value.includes("Amy Farrish"))
+      // Find the e-transfer group (should contain 'amy' and 'farrish' tokens)
+      const eTransferTokens = categorizerCalls.find(
+        (tokens) => tokens.includes("amy") && tokens.includes("farrish")
       )
-      assertThat(eTransferGroup, is(hasSize(2)))
+      assertThat(eTransferTokens !== undefined, is(true))
 
-      // Find the coffee shop group (should have 2 transactions)
-      const coffeeGroup = categorizerCalls.find((group) =>
-        group.some((t) => t.description.value.includes("COFFEE SHOP"))
+      // Find the coffee shop group (should contain 'coffee' and 'shop' tokens)
+      const coffeeTokens = categorizerCalls.find(
+        (tokens) => tokens.includes("coffee") && tokens.includes("shop")
       )
-      assertThat(coffeeGroup, is(hasSize(2)))
+      assertThat(coffeeTokens !== undefined, is(true))
 
-      // Find the cheque group (should have 1 transaction)
-      const chequeGroup = categorizerCalls.find((group) =>
-        group.some((t) => t.description.value.includes("CHEQUE"))
+      // Find the cheque group (should contain 'cheque' token)
+      const chequeTokens = categorizerCalls.find((tokens) =>
+        tokens.includes("cheque")
       )
-      assertThat(chequeGroup, is(hasSize(1)))
+      assertThat(chequeTokens !== undefined, is(true))
     })
   })
 })
