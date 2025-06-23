@@ -20,6 +20,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.54.0",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "openai": "^4.0.0"

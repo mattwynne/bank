@@ -96,10 +96,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(
-        tokens,
-        is(["debit", "internet", "banking", "e-transfer", "amy", "farrish"])
-      )
+      assertThat(tokens, is(["debit", "e-transfer", "amy", "farrish"]))
     })
 
     it("should NOT remove common noise words", () => {
@@ -114,20 +111,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(
-        tokens,
-        is([
-          "debit",
-          "internet",
-          "banking",
-          "electronic",
-          "funds",
-          "transfer",
-          "pay",
-          "john",
-          "doe",
-        ])
-      )
+      assertThat(tokens, is(["debit", "pay", "john", "doe"]))
     })
 
     it("should remove tokens with email addresses", () => {
@@ -243,10 +227,7 @@ describe("BankTransaction", () => {
       const tokens2 = transaction2.tokens()
 
       assertThat(tokens1, is(tokens2))
-      assertThat(
-        tokens1,
-        is(["debit", "internet", "banking", "e-transfer", "amy", "farrish"])
-      )
+      assertThat(tokens1, is(["debit", "e-transfer", "amy", "farrish"]))
     })
 
     it("should convert to lowercase", () => {
