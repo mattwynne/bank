@@ -83,7 +83,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["coffee", "shop", "downtown"]))
+      assertThat(tokens, is(["debit", "coffee", "shop", "downtown"]))
     })
 
     it("should remove pure numbers", () => {
@@ -98,7 +98,7 @@ describe("BankTransaction", () => {
 
       assertThat(
         tokens,
-        is(["internet", "banking", "e-transfer", "amy", "farrish"])
+        is(["debit", "internet", "banking", "e-transfer", "amy", "farrish"])
       )
     })
 
@@ -117,6 +117,7 @@ describe("BankTransaction", () => {
       assertThat(
         tokens,
         is([
+          "debit",
           "internet",
           "banking",
           "electronic",
@@ -139,7 +140,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["payment", "to", "for", "services"]))
+      assertThat(tokens, is(["debit", "payment", "to", "for", "services"]))
     })
 
     it("should NOT remove tokens shorter than 3 characters", () => {
@@ -152,7 +153,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["buy", "at", "a", "b", "shop", "xy"]))
+      assertThat(tokens, is(["debit", "buy", "at", "a", "b", "shop", "xy"]))
     })
 
     it("should handle point of sale transactions", () => {
@@ -170,6 +171,7 @@ describe("BankTransaction", () => {
       assertThat(
         tokens,
         is([
+          "debit",
           "point",
           "of",
           "sale",
@@ -193,7 +195,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["cheque"]))
+      assertThat(tokens, is(["debit", "cheque"]))
     })
 
     it("should handle empty meaningful tokens", () => {
@@ -206,7 +208,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is([]))
+      assertThat(tokens, is(["debit"]))
     })
 
     it("should handle transactions with mixed case and whitespace", () => {
@@ -219,7 +221,7 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["coffee", "shop", "downtown"]))
+      assertThat(tokens, is(["debit", "coffee", "shop", "downtown"]))
     })
 
     it("should group similar e-transfer transactions", () => {
@@ -243,7 +245,7 @@ describe("BankTransaction", () => {
       assertThat(tokens1, is(tokens2))
       assertThat(
         tokens1,
-        is(["internet", "banking", "e-transfer", "amy", "farrish"])
+        is(["debit", "internet", "banking", "e-transfer", "amy", "farrish"])
       )
     })
 
@@ -257,7 +259,20 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["starbucks", "coffee", "shop"]))
+      assertThat(tokens, is(["debit", "starbucks", "coffee", "shop"]))
+    })
+
+    it("should include credit as first token for credit transactions", () => {
+      const transaction = new BankTransaction(
+        1,
+        new Date("2023-01-15"),
+        new Description("SALARY DEPOSIT"),
+        Amount.credit(2500.0)
+      )
+
+      const tokens = transaction.tokens()
+
+      assertThat(tokens, is(["credit", "salary", "deposit"]))
     })
   })
 })

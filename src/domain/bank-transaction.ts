@@ -2,6 +2,8 @@ import { Category } from "./category"
 import { Description } from "./description"
 import { Amount } from "./amount"
 
+export type TransactionType = "debit" | "credit"
+
 export class BankTransaction {
   constructor(
     public readonly id: number,
@@ -21,8 +23,12 @@ export class BankTransaction {
     )
   }
 
+  transactionType(): TransactionType {
+    return this.amount.value < 0 ? "debit" : "credit"
+  }
+
   tokens(): string[] {
-    return this.description.value
+    const descriptionTokens = this.description.value
       .toLowerCase()
       .split(/\s+/)
       .filter(
@@ -30,5 +36,7 @@ export class BankTransaction {
           !/\d+/.test(token) && // Remove mostly numbers
           !token.includes("@") // Remove emails
       )
+
+    return [this.transactionType(), ...descriptionTokens]
   }
 }

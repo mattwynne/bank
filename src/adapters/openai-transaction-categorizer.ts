@@ -51,6 +51,7 @@ Suggested categories are:
 - Entertainment
 - Bills & Utilities
 - Healthcare
+- Health & Fitness
 - Travel
 - Other income
 - Transfer
@@ -62,6 +63,8 @@ Note the following keywords that will help you categorize:
 | Amy Farrish | Cleaning |
 | Manulife | Healthcare |
 | Wendee Byrne | Healthcare |
+| Deel | Salary |g
+| Eva Gifford | Sports, Health & Fitness |
 
 Respond with only the category name, no additional text or formatting.`
   }
