@@ -36,11 +36,13 @@ describe("OpenAiTransactionCategorizer", () => {
     it("should categorize transactions using OpenAI", async () => {
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-01"),
           new Description("STARBUCKS COFFEE"),
           Amount.debit(4.5)
         ),
         new BankTransaction(
+          2,
           new Date("2023-01-02"),
           new Description("WHOLE FOODS MARKET"),
           Amount.debit(67.23)
@@ -57,6 +59,7 @@ describe("OpenAiTransactionCategorizer", () => {
     it("should send properly formatted prompt to OpenAI", async () => {
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-01"),
           new Description("STARBUCKS COFFEE"),
           Amount.debit(4.5)
@@ -87,6 +90,7 @@ describe("OpenAiTransactionCategorizer", () => {
     it("should use system prompt for categorization rules", async () => {
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-01"),
           new Description("STARBUCKS COFFEE"),
           Amount.debit(4.5)
@@ -117,6 +121,7 @@ describe("OpenAiTransactionCategorizer", () => {
 
     it("should preserve original transaction data", async () => {
       const originalTransaction = new BankTransaction(
+        1,
         new Date("2023-01-01"),
         new Description("STARBUCKS COFFEE"),
         Amount.debit(4.5)
@@ -132,16 +137,19 @@ describe("OpenAiTransactionCategorizer", () => {
     it("should handle multiple transactions in batch", async () => {
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-01"),
           new Description("STARBUCKS"),
           Amount.debit(4.5)
         ),
         new BankTransaction(
+          2,
           new Date("2023-01-02"),
           new Description("SHELL GAS"),
           Amount.debit(35.0)
         ),
         new BankTransaction(
+          3,
           new Date("2023-01-03"),
           new Description("GROCERY STORE"),
           Amount.debit(67.23)

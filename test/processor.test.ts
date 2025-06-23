@@ -6,6 +6,7 @@ import { TransactionWriter } from "../src/ports/transaction-writer"
 import { BankTransaction } from "../src/domain/bank-transaction"
 import { Category } from "../src/domain/category"
 import { Description } from "../src/domain/description"
+import { Amount } from "../src/domain/amount"
 
 describe("Processor", () => {
   let mockReader: TransactionReader
@@ -53,14 +54,16 @@ describe("Processor", () => {
     it("should categorize all transactions in batch", async () => {
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-01"),
           new Description("Coffee Shop"),
-          -5.5
+          Amount.debit(5.5)
         ),
         new BankTransaction(
+          2,
           new Date("2023-01-02"),
           new Description("Grocery Store"),
-          -45.0
+          Amount.debit(45.0)
         ),
       ]
 
@@ -84,9 +87,10 @@ describe("Processor", () => {
 
     it("should write categorized transactions", async () => {
       const transaction = new BankTransaction(
+        1,
         new Date("2023-01-01"),
         new Description("Coffee Shop"),
-        -5.5
+        Amount.debit(5.5)
       )
       mockReader.readTransactions = async () => [transaction]
       mockCategorizer.categorize = async (transactions: BankTransaction[]) => [
@@ -109,29 +113,34 @@ describe("Processor", () => {
     it("should process transactions in batches of specified size", async () => {
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-01"),
           new Description("Coffee Shop"),
-          -5.5
+          Amount.debit(5.5)
         ),
         new BankTransaction(
+          2,
           new Date("2023-01-02"),
           new Description("Grocery Store"),
-          -45.0
+          Amount.debit(45.0)
         ),
         new BankTransaction(
+          3,
           new Date("2023-01-03"),
           new Description("Gas Station"),
-          -30.0
+          Amount.debit(30.0)
         ),
         new BankTransaction(
+          4,
           new Date("2023-01-04"),
           new Description("Restaurant"),
-          -25.0
+          Amount.debit(25.0)
         ),
         new BankTransaction(
+          5,
           new Date("2023-01-05"),
           new Description("Pharmacy"),
-          -15.0
+          Amount.debit(15.0)
         ),
       ]
 

@@ -34,6 +34,7 @@ describe("CsvTransactionWriter", () => {
     it("should write single debit transaction to CSV file", async () => {
       const writer = new CsvTransactionWriter(testOutputPath)
       const transaction = new BankTransaction(
+        1,
         new Date("2023-01-15"),
         new Description("STARBUCKS COFFEE"),
         Amount.debit(4.5),
@@ -58,6 +59,7 @@ describe("CsvTransactionWriter", () => {
     it("should write single credit transaction to CSV file", async () => {
       const writer = new CsvTransactionWriter(testOutputPath)
       const transaction = new BankTransaction(
+        1,
         new Date("2023-01-16"),
         new Description("SALARY DEPOSIT"),
         Amount.credit(2500.0),
@@ -80,18 +82,21 @@ describe("CsvTransactionWriter", () => {
       const writer = new CsvTransactionWriter(testOutputPath)
       const transactions = [
         new BankTransaction(
+          1,
           new Date("2023-01-15"),
           new Description("STARBUCKS COFFEE"),
           Amount.debit(4.5),
           new Category("Food & Dining")
         ),
         new BankTransaction(
+          2,
           new Date("2023-01-16"),
           new Description("SALARY DEPOSIT"),
           Amount.credit(2500.0),
           new Category("Income")
         ),
         new BankTransaction(
+          3,
           new Date("2023-01-17"),
           new Description("GROCERY STORE"),
           Amount.debit(67.23),
@@ -119,6 +124,7 @@ describe("CsvTransactionWriter", () => {
     it("should handle transactions without categories", async () => {
       const writer = new CsvTransactionWriter(testOutputPath)
       const transaction = new BankTransaction(
+        1,
         new Date("2023-01-15"),
         new Description("UNKNOWN MERCHANT"),
         Amount.debit(25.0)
@@ -139,6 +145,7 @@ describe("CsvTransactionWriter", () => {
     it("should handle descriptions with commas", async () => {
       const writer = new CsvTransactionWriter(testOutputPath)
       const transaction = new BankTransaction(
+        1,
         new Date("2023-01-15"),
         new Description("Restaurant, Cafe & Bar"),
         Amount.debit(35.75),

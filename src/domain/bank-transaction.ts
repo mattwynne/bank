@@ -4,6 +4,7 @@ import { Amount } from "./amount"
 
 export class BankTransaction {
   constructor(
+    public readonly id: number,
     public readonly date: Date,
     public readonly description: Description,
     public readonly amount: Amount,
@@ -12,6 +13,7 @@ export class BankTransaction {
 
   withCategory(category: Category): BankTransaction {
     return new BankTransaction(
+      this.id,
       this.date,
       this.description,
       this.amount,

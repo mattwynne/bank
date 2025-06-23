@@ -11,6 +11,7 @@ export class CsvTransactionReader implements TransactionReader {
   async readTransactions(): Promise<BankTransaction[]> {
     return new Promise((resolve, reject) => {
       const transactions: BankTransaction[] = []
+      let transactionId = 1 // Start ID counter at 1
 
       // Check if file exists first
       if (!fs.existsSync(this.filePath)) {
@@ -28,7 +29,7 @@ export class CsvTransactionReader implements TransactionReader {
 
       stream.on("data", (row: any) => {
         try {
-          const transaction = this.parseTransactionRow(row)
+          const transaction = this.parseTransactionRow(row, transactionId++)
           if (transaction) {
             transactions.push(transaction)
           }
@@ -50,7 +51,7 @@ export class CsvTransactionReader implements TransactionReader {
     })
   }
 
-  private parseTransactionRow(row: any): BankTransaction | null {
+  private parseTransactionRow(row: any, id: number): BankTransaction | null {
     // CIBC CSV format: Date,Description,Debit Amount,Credit Amount
     const dateString = row["0"]?.trim()
     const description = row["1"]?.trim()
@@ -88,6 +89,6 @@ export class CsvTransactionReader implements TransactionReader {
       )
     }
 
-    return new BankTransaction(date, new Description(description), amount)
+    return new BankTransaction(id, date, new Description(description), amount)
   }
 }

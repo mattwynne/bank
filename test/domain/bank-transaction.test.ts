@@ -9,6 +9,7 @@ describe("BankTransaction", () => {
     it("should create transaction with all provided fields", () => {
       const date = new Date("2023-01-15")
       const transaction = new BankTransaction(
+        1,
         date,
         new Description("Coffee Shop"),
         Amount.debit(5.5)
@@ -24,6 +25,7 @@ describe("BankTransaction", () => {
       const date = new Date("2023-01-15")
       const category = new Category("Food & Dining")
       const transaction = new BankTransaction(
+        1,
         date,
         new Description("Coffee Shop"),
         Amount.debit(5.5),
@@ -37,6 +39,7 @@ describe("BankTransaction", () => {
   describe("withCategory", () => {
     it("should return new transaction with category attached", () => {
       const originalTransaction = new BankTransaction(
+        1,
         new Date("2023-01-15"),
         new Description("Coffee Shop"),
         Amount.debit(5.5)
@@ -56,6 +59,7 @@ describe("BankTransaction", () => {
 
     it("should not modify original transaction", () => {
       const originalTransaction = new BankTransaction(
+        1,
         new Date("2023-01-15"),
         new Description("Coffee Shop"),
         Amount.debit(5.5)
