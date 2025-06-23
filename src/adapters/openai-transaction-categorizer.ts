@@ -35,6 +35,8 @@ export class OpenAiTransactionCategorizer implements TransactionCategorizer {
   private buildSystemPrompt(): string {
     return `You are a financial transaction categorizer. Your job is to categorize bank transactions into appropriate spending categories.
 
+Your response will be read by code that only understands JSON.
+
 Please categorize each transaction and respond with a JSON array containing objects with a "category" field.
 
 Common categories include:
@@ -50,7 +52,9 @@ Common categories include:
 - Transfer
 - Other
 
-Return your response as a JSON array in the exact same order as the transactions provided. Each object should have a "category" field with the category name.`
+Return your response as a JSON array in the exact same order as the transactions provided. Each object should have a "category" field with the category name.
+
+The response must only contain raw valid JSON.`
   }
 
   private buildPrompt(transactions: BankTransaction[]): string {
