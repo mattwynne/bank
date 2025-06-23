@@ -34,10 +34,7 @@ export class BankTransaction {
       .filter(
         (token) =>
           !/\d+/.test(token) && // Remove mostly numbers
-          !token.includes("@") && // Remove emails
-          token !== "internet" &&
-          token !== "banking" &&
-          token !== "electronic"
+          !token.includes("@") // Remove emails
       )
 
     return [this.transactionType(), ...descriptionTokens]
