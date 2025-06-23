@@ -20,4 +20,21 @@ export class BankTransaction {
       category
     )
   }
+
+  tokens(): string[] {
+    return this.description.value
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(
+        (token) =>
+          token.length > 2 &&
+          !/^\d+$/.test(token) && // Remove pure numbers
+          !token.includes("@") && // Remove emails
+          token !== "transfer" && // Remove common noise words
+          token !== "banking" &&
+          token !== "internet" &&
+          token !== "electronic" &&
+          token !== "funds"
+      )
+  }
 }

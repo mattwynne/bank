@@ -25,6 +25,7 @@ export class OpenAiTransactionCategorizer implements TransactionCategorizer {
       temperature: 0.1,
     })
 
+    console.log([prompt, response.choices[0].message.content])
     const categories = this.parseResponse(response.choices[0].message.content)
 
     return transactions.map((transaction, index) =>
@@ -39,7 +40,14 @@ Your response will be read by code that only understands JSON.
 
 Please categorize each transaction and respond with a JSON array containing objects with a "category" field.
 
-Common categories include:
+Suggested categories are:
+- ATM Cash withdrawals
+- E-Transfer payment
+- Internet banking transfer
+- Mortgage
+- Salary
+- Investments
+- Insurance
 - Food & Dining
 - Groceries  
 - Transportation
@@ -48,9 +56,20 @@ Common categories include:
 - Bills & Utilities
 - Healthcare
 - Travel
-- Income
+- Salary
+- Other income
 - Transfer
-- Other
+- Unknown
+
+Note the following keywords in a transaction that will help you categorize it:
+| Keywords | Category |
+|----------|----------|
+| Amy Farrish | Cleaning |
+| Manulife | Healthcare |
+| Wendee Byrne | Healthcare |
+| Pilates | Healthcare |
+| Virgin Plus | Bills & Utilities |
+| PAY Red Donkey Tech | Salary |
 
 Return your response as a JSON array in the exact same order as the transactions provided. Each object should have a "category" field with the category name.
 

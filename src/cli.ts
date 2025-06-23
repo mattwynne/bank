@@ -15,7 +15,6 @@ async function main() {
 
   const inputFilePath = args[0]
   const outputFilePath = args[1]
-  const batchSize = args[2] ? parseInt(args[2]) : undefined
   const openAiApiKey = process.env.OPENAI_API_KEY
 
   if (!openAiApiKey) {
@@ -28,7 +27,6 @@ async function main() {
       inputFilePath,
       outputFilePath,
       openAiApiKey,
-      batchSize,
     })
   } catch (error) {
     console.error("Error processing transactions:", error)

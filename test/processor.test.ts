@@ -51,7 +51,7 @@ describe("Processor", () => {
       assertThat(readCalled, is(true))
     })
 
-    it("should categorize all transactions in batch", async () => {
+    it("should categorize all transactions in groups by similarity", async () => {
       const transactions = [
         new BankTransaction(
           1,
@@ -69,20 +69,22 @@ describe("Processor", () => {
 
       mockReader.readTransactions = async () => transactions
 
-      let receivedTransactions: BankTransaction[] = []
+      let allReceivedTransactions: BankTransaction[] = []
       mockCategorizer.categorize = async (transactions: BankTransaction[]) => {
-        receivedTransactions = transactions
-        return [
-          transactions[0].withCategory(new Category("Food")),
-          transactions[1].withCategory(new Category("Groceries")),
-        ]
+        allReceivedTransactions.push(...transactions)
+        return transactions.map((transaction) =>
+          transaction.withCategory(new Category("Food"))
+        )
       }
 
       await processor.process()
 
-      assertThat(receivedTransactions, hasSize(2))
-      assertThat(receivedTransactions[0].description.value, is("Coffee Shop"))
-      assertThat(receivedTransactions[1].description.value, is("Grocery Store"))
+      assertThat(allReceivedTransactions, hasSize(2))
+      const descriptions = allReceivedTransactions.map(
+        (t) => t.description.value
+      )
+      assertThat(descriptions.includes("Coffee Shop"), is(true))
+      assertThat(descriptions.includes("Grocery Store"), is(true))
     })
 
     it("should write categorized transactions", async () => {
@@ -110,37 +112,45 @@ describe("Processor", () => {
       assertThat(writtenTransactions[0].category?.name, is("Food"))
     })
 
-    it("should process transactions in batches of specified size", async () => {
+    it("should group transactions with similar descriptions together", async () => {
       const transactions = [
         new BankTransaction(
           1,
           new Date("2023-01-01"),
-          new Description("Coffee Shop"),
-          Amount.debit(5.5)
+          new Description(
+            "Internet Banking E-TRANSFER 105483383773 Amy Farrish"
+          ),
+          Amount.debit(277.5)
         ),
         new BankTransaction(
           2,
           new Date("2023-01-02"),
-          new Description("Grocery Store"),
-          Amount.debit(45.0)
+          new Description(
+            "Internet Banking E-TRANSFER 105440322530 Amy Farrish"
+          ),
+          Amount.debit(240.0)
         ),
         new BankTransaction(
           3,
           new Date("2023-01-03"),
-          new Description("Gas Station"),
-          Amount.debit(30.0)
+          new Description(
+            "Point of Sale - Interac RETAIL PURCHASE 516419480876 COFFEE SHOP"
+          ),
+          Amount.debit(5.5)
         ),
         new BankTransaction(
           4,
           new Date("2023-01-04"),
-          new Description("Restaurant"),
-          Amount.debit(25.0)
+          new Description(
+            "Point of Sale - Interac RETAIL PURCHASE 516419480999 COFFEE SHOP"
+          ),
+          Amount.debit(4.25)
         ),
         new BankTransaction(
           5,
           new Date("2023-01-05"),
-          new Description("Pharmacy"),
-          Amount.debit(15.0)
+          new Description("CHEQUE 001 82657362"),
+          Amount.debit(100.0)
         ),
       ]
 
@@ -148,35 +158,38 @@ describe("Processor", () => {
 
       const categorizerCalls: BankTransaction[][] = []
       mockCategorizer.categorize = async (
-        transactionBatch: BankTransaction[]
+        transactionGroup: BankTransaction[]
       ) => {
-        categorizerCalls.push(transactionBatch)
-        return transactionBatch.map((transaction) =>
+        categorizerCalls.push(transactionGroup)
+        return transactionGroup.map((transaction) =>
           transaction.withCategory(new Category("Test Category"))
         )
       }
 
-      const processorWithBatchSize = new Processor(
-        mockReader,
-        mockCategorizer,
-        mockWriter,
-        2
+      await processor.process()
+
+      // Should group similar e-transfers together and similar coffee shop purchases together
+      // Plus the cheque should be in its own group
+      // So we expect fewer groups than individual transactions
+      assertThat(categorizerCalls.length, is(3)) // 3 distinct groups
+
+      // Find the e-transfer group (should have 2 transactions)
+      const eTransferGroup = categorizerCalls.find((group) =>
+        group.some((t) => t.description.value.includes("Amy Farrish"))
       )
+      assertThat(eTransferGroup, is(hasSize(2)))
 
-      await processorWithBatchSize.process()
+      // Find the coffee shop group (should have 2 transactions)
+      const coffeeGroup = categorizerCalls.find((group) =>
+        group.some((t) => t.description.value.includes("COFFEE SHOP"))
+      )
+      assertThat(coffeeGroup, is(hasSize(2)))
 
-      // Should have made 3 calls: [2, 2, 1] transactions
-      assertThat(categorizerCalls, hasSize(3))
-      assertThat(categorizerCalls[0], hasSize(2))
-      assertThat(categorizerCalls[1], hasSize(2))
-      assertThat(categorizerCalls[2], hasSize(1))
-
-      // Verify the transactions are batched correctly by description
-      assertThat(categorizerCalls[0][0].description.value, is("Coffee Shop"))
-      assertThat(categorizerCalls[0][1].description.value, is("Grocery Store"))
-      assertThat(categorizerCalls[1][0].description.value, is("Gas Station"))
-      assertThat(categorizerCalls[1][1].description.value, is("Restaurant"))
-      assertThat(categorizerCalls[2][0].description.value, is("Pharmacy"))
+      // Find the cheque group (should have 1 transaction)
+      const chequeGroup = categorizerCalls.find((group) =>
+        group.some((t) => t.description.value.includes("CHEQUE"))
+      )
+      assertThat(chequeGroup, is(hasSize(1)))
     })
   })
 })

@@ -8,7 +8,6 @@ export interface ApplicationConfig {
   inputFilePath: string
   outputFilePath: string
   openAiApiKey: string
-  batchSize?: number
 }
 
 export class Application {
@@ -28,12 +27,7 @@ export class Application {
     const writer = new CsvTransactionWriter(this.config.outputFilePath)
 
     // Create and run processor
-    const processor = new Processor(
-      reader,
-      categorizer,
-      writer,
-      this.config.batchSize || 50
-    )
+    const processor = new Processor(reader, categorizer, writer)
 
     await processor.process()
 

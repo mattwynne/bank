@@ -7,7 +7,6 @@ async function exampleUsage() {
     inputFilePath: "tmp/cibc.csv",
     outputFilePath: "categorized-transactions.csv",
     openAiApiKey: process.env.OPENAI_API_KEY || "your-openai-api-key",
-    batchSize: 25, // Process 25 transactions at a time
   })
 
   // await app.run()
@@ -18,7 +17,6 @@ async function exampleUsage() {
   //   inputFilePath: "cibc.csv",
   //   outputFilePath: "categorized-transactions.csv",
   //   openAiApiKey: process.env.OPENAI_API_KEY || "your-openai-api-key",
-  //   batchSize: 50, // Default batch size
   // })
 
   console.log("\nTo run this example:")
