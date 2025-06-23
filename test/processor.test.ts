@@ -27,7 +27,21 @@ describe("Processor", () => {
       writeTransactions: async (transactions: BankTransaction[]) => {},
     }
 
-    processor = new Processor(mockReader, mockCategorizer, mockWriter)
+    processor = new Processor(mockReader, [mockCategorizer], mockWriter)
+  })
+
+  describe("constructor", () => {
+    it("should throw error when no categorizers are provided", () => {
+      try {
+        new Processor(mockReader, [], mockWriter)
+        throw new Error("Expected constructor to throw an error")
+      } catch (error) {
+        assertThat(
+          (error as Error).message,
+          is("At least one transaction categorizer is required")
+        )
+      }
+    })
   })
 
   describe("process", () => {
@@ -180,6 +194,111 @@ describe("Processor", () => {
         tokens.includes("cheque")
       )
       assertThat(chequeTokens !== undefined, is(true))
+    })
+
+    it("should use the agreed category when multiple categorizers agree", async () => {
+      const transaction = new BankTransaction(
+        1,
+        new Date("2023-01-01"),
+        new Description("Coffee Shop"),
+        Amount.debit(5.5)
+      )
+      mockReader.readTransactions = async () => [transaction]
+
+      // Create 3 categorizers that all agree
+      const categorizer1 = { categorizeByTokens: async () => "Food" }
+      const categorizer2 = { categorizeByTokens: async () => "Food" }
+      const categorizer3 = { categorizeByTokens: async () => "Food" }
+
+      processor = new Processor(
+        mockReader,
+        [categorizer1, categorizer2, categorizer3],
+        mockWriter
+      )
+
+      let writtenTransactions: BankTransaction[] = []
+      mockWriter.writeTransactions = async (
+        transactions: BankTransaction[]
+      ) => {
+        writtenTransactions = transactions
+      }
+
+      await processor.process()
+
+      assertThat(writtenTransactions, hasSize(1))
+      assertThat(writtenTransactions[0].category?.name, is("Food"))
+    })
+
+    it("should create combined category when categorizers disagree", async () => {
+      const transaction = new BankTransaction(
+        1,
+        new Date("2023-01-01"),
+        new Description("Coffee Shop"),
+        Amount.debit(5.5)
+      )
+      mockReader.readTransactions = async () => [transaction]
+
+      // Create 3 categorizers that disagree
+      const categorizer1 = { categorizeByTokens: async () => "Food" }
+      const categorizer2 = { categorizeByTokens: async () => "Entertainment" }
+      const categorizer3 = { categorizeByTokens: async () => "Dining" }
+
+      processor = new Processor(
+        mockReader,
+        [categorizer1, categorizer2, categorizer3],
+        mockWriter
+      )
+
+      let writtenTransactions: BankTransaction[] = []
+      mockWriter.writeTransactions = async (
+        transactions: BankTransaction[]
+      ) => {
+        writtenTransactions = transactions
+      }
+
+      await processor.process()
+
+      assertThat(writtenTransactions, hasSize(1))
+      assertThat(
+        writtenTransactions[0].category?.name,
+        is("Food or Entertainment or Dining")
+      )
+    })
+
+    it("should handle partial agreement among categorizers", async () => {
+      const transaction = new BankTransaction(
+        1,
+        new Date("2023-01-01"),
+        new Description("Coffee Shop"),
+        Amount.debit(5.5)
+      )
+      mockReader.readTransactions = async () => [transaction]
+
+      // Create 3 categorizers where 2 agree and 1 disagrees
+      const categorizer1 = { categorizeByTokens: async () => "Food" }
+      const categorizer2 = { categorizeByTokens: async () => "Food" }
+      const categorizer3 = { categorizeByTokens: async () => "Entertainment" }
+
+      processor = new Processor(
+        mockReader,
+        [categorizer1, categorizer2, categorizer3],
+        mockWriter
+      )
+
+      let writtenTransactions: BankTransaction[] = []
+      mockWriter.writeTransactions = async (
+        transactions: BankTransaction[]
+      ) => {
+        writtenTransactions = transactions
+      }
+
+      await processor.process()
+
+      assertThat(writtenTransactions, hasSize(1))
+      assertThat(
+        writtenTransactions[0].category?.name,
+        is("Food or Entertainment")
+      )
     })
   })
 })

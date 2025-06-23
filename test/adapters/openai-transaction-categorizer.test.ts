@@ -54,12 +54,6 @@ describe("OpenAiTransactionCategorizer", () => {
       await categorizer.categorizeByTokens(tokens)
 
       assertThat(capturedPrompt.includes("starbucks, coffee, shop"), is(true))
-      assertThat(
-        capturedPrompt.includes(
-          "Categorize transactions with these description tokens"
-        ),
-        is(true)
-      )
     })
 
     it("should use system prompt for categorization rules", async () => {

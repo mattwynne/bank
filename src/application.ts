@@ -23,11 +23,13 @@ export class Application {
 
     // Create adapters
     const reader = new CsvTransactionReader(this.config.inputFilePath)
-    const categorizer = new OpenAiTransactionCategorizer(openAiClient)
+    const categorizers = Array(5)
+      .fill(null)
+      .map(() => new OpenAiTransactionCategorizer(openAiClient))
     const writer = new CsvTransactionWriter(this.config.outputFilePath)
 
     // Create and run processor
-    const processor = new Processor(reader, categorizer, writer)
+    const processor = new Processor(reader, categorizers, writer)
 
     await processor.process()
 

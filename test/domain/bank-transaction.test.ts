@@ -96,10 +96,13 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["e-transfer", "amy", "farrish"]))
+      assertThat(
+        tokens,
+        is(["internet", "banking", "e-transfer", "amy", "farrish"])
+      )
     })
 
-    it("should remove common noise words", () => {
+    it("should NOT remove common noise words", () => {
       const transaction = new BankTransaction(
         1,
         new Date("2023-01-15"),
@@ -111,7 +114,19 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["pay", "john", "doe"]))
+      assertThat(
+        tokens,
+        is([
+          "internet",
+          "banking",
+          "electronic",
+          "funds",
+          "transfer",
+          "pay",
+          "john",
+          "doe",
+        ])
+      )
     })
 
     it("should remove tokens with email addresses", () => {
@@ -124,33 +139,20 @@ describe("BankTransaction", () => {
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["payment", "for", "services"]))
+      assertThat(tokens, is(["payment", "to", "for", "services"]))
     })
 
-    it("should remove tokens shorter than 3 characters", () => {
+    it("should NOT remove tokens shorter than 3 characters", () => {
       const transaction = new BankTransaction(
         1,
         new Date("2023-01-15"),
-        new Description("Buy at A B Shop XY"),
+        new Description("Buy at a B shop XY"),
         Amount.debit(25.0)
       )
 
       const tokens = transaction.tokens()
 
-      assertThat(tokens, is(["buy", "shop"]))
-    })
-
-    it("should convert to lowercase", () => {
-      const transaction = new BankTransaction(
-        1,
-        new Date("2023-01-15"),
-        new Description("STARBUCKS COFFEE SHOP"),
-        Amount.debit(4.5)
-      )
-
-      const tokens = transaction.tokens()
-
-      assertThat(tokens, is(["starbucks", "coffee", "shop"]))
+      assertThat(tokens, is(["buy", "at", "a", "b", "shop", "xy"]))
     })
 
     it("should handle point of sale transactions", () => {
@@ -167,7 +169,17 @@ describe("BankTransaction", () => {
 
       assertThat(
         tokens,
-        is(["point", "sale", "interac", "retail", "purchase", "coffee", "shop"])
+        is([
+          "point",
+          "of",
+          "sale",
+          "-",
+          "interac",
+          "retail",
+          "purchase",
+          "coffee",
+          "shop",
+        ])
       )
     })
 
@@ -229,7 +241,23 @@ describe("BankTransaction", () => {
       const tokens2 = transaction2.tokens()
 
       assertThat(tokens1, is(tokens2))
-      assertThat(tokens1, is(["e-transfer", "amy", "farrish"]))
+      assertThat(
+        tokens1,
+        is(["internet", "banking", "e-transfer", "amy", "farrish"])
+      )
+    })
+
+    it("should convert to lowercase", () => {
+      const transaction = new BankTransaction(
+        1,
+        new Date("2023-01-15"),
+        new Description("STARBUCKS COFFEE SHOP"),
+        Amount.debit(4.5)
+      )
+
+      const tokens = transaction.tokens()
+
+      assertThat(tokens, is(["starbucks", "coffee", "shop"]))
     })
   })
 })
